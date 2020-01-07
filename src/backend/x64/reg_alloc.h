@@ -114,8 +114,8 @@ public:
 
     void Release(const Xbyak::Reg& reg);
 
-    Xbyak::Reg64 ScratchGpr(HostLocList desired_locations = any_gpr);
-    Xbyak::Xmm ScratchXmm(HostLocList desired_locations = any_xmm);
+    Xbyak::Reg64 ScratchGpr(const HostLocList& desired_locations = any_gpr);
+    Xbyak::Xmm ScratchXmm(const HostLocList& desired_locations = any_xmm);
 
     void HostCall(IR::Inst* result_def = nullptr, boost::optional<Argument&> arg0 = {}, boost::optional<Argument&> arg1 = {}, boost::optional<Argument&> arg2 = {}, boost::optional<Argument&> arg3 = {});
 
@@ -128,12 +128,12 @@ public:
 private:
     friend struct Argument;
 
-    HostLoc SelectARegister(HostLocList desired_locations) const;
+    HostLoc SelectARegister(const HostLocList& desired_locations) const;
     boost::optional<HostLoc> ValueLocation(const IR::Inst* value) const;
 
-    HostLoc UseImpl(IR::Value use_value, HostLocList desired_locations);
-    HostLoc UseScratchImpl(IR::Value use_value, HostLocList desired_locations);
-    HostLoc ScratchImpl(HostLocList desired_locations);
+    HostLoc UseImpl(IR::Value use_value, const HostLocList& desired_locations);
+    HostLoc UseScratchImpl(IR::Value use_value, const HostLocList& desired_locations);
+    HostLoc ScratchImpl(const HostLocList& desired_locations);
     void DefineValueImpl(IR::Inst* def_inst, HostLoc host_loc);
     void DefineValueImpl(IR::Inst* def_inst, const IR::Value& use_inst);
 

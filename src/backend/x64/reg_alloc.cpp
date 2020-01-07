@@ -298,15 +298,15 @@ void RegAlloc::Release(const Xbyak::Reg& reg) {
     LocInfo(hostloc).ReleaseOne();
 }
 
-Xbyak::Reg64 RegAlloc::ScratchGpr(HostLocList desired_locations) {
+Xbyak::Reg64 RegAlloc::ScratchGpr(const HostLocList& desired_locations) {
     return HostLocToReg64(ScratchImpl(desired_locations));
 }
 
-Xbyak::Xmm RegAlloc::ScratchXmm(HostLocList desired_locations) {
+Xbyak::Xmm RegAlloc::ScratchXmm(const HostLocList& desired_locations) {
     return HostLocToXmm(ScratchImpl(desired_locations));
 }
 
-HostLoc RegAlloc::UseImpl(IR::Value use_value, HostLocList desired_locations) {
+HostLoc RegAlloc::UseImpl(IR::Value use_value, const HostLocList& desired_locations) {
     if (use_value.IsImmediate()) {
         return LoadImmediate(use_value, ScratchImpl(desired_locations));
     }
@@ -338,7 +338,7 @@ HostLoc RegAlloc::UseImpl(IR::Value use_value, HostLocList desired_locations) {
     return destination_location;
 }
 
-HostLoc RegAlloc::UseScratchImpl(IR::Value use_value, HostLocList desired_locations) {
+HostLoc RegAlloc::UseScratchImpl(IR::Value use_value, const HostLocList& desired_locations) {
     if (use_value.IsImmediate()) {
         return LoadImmediate(use_value, ScratchImpl(desired_locations));
     }
@@ -363,7 +363,7 @@ HostLoc RegAlloc::UseScratchImpl(IR::Value use_value, HostLocList desired_locati
     return destination_location;
 }
 
-HostLoc RegAlloc::ScratchImpl(HostLocList desired_locations) {
+HostLoc RegAlloc::ScratchImpl(const HostLocList& desired_locations) {
     HostLoc location = SelectARegister(desired_locations);
     MoveOutOfTheWay(location);
     LocInfo(location).WriteLock();
@@ -432,7 +432,7 @@ void RegAlloc::AssertNoMoreUses() {
     ASSERT(std::all_of(hostloc_info.begin(), hostloc_info.end(), [](const auto& i) { return i.IsEmpty(); }));
 }
 
-HostLoc RegAlloc::SelectARegister(HostLocList desired_locations) const {
+HostLoc RegAlloc::SelectARegister(const HostLocList& desired_locations) const {
     std::vector<HostLoc> candidates = desired_locations;
 
     // Find all locations that have not been allocated..
