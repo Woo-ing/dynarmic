@@ -79,7 +79,8 @@ bool A32EmitContext::FPSCR_DN() const {
 }
 
 A32EmitX64::A32EmitX64(BlockOfCode& code, A32::UserConfig config, A32::Jit* jit_interface)
-        : EmitX64(code), config(std::move(config)), jit_interface(jit_interface) {
+    : EmitX64(code), config(std::move(config)), jit_interface(jit_interface)
+	, reg_alloc(code, A32JitState::SpillCount, SpillToOpArg<A32JitState>) {
     GenMemoryAccessors();
     GenTerminalHandlers();
     code.PreludeComplete();
@@ -98,7 +99,6 @@ A32EmitX64::BlockDescriptor A32EmitX64::Emit(IR::Block& block) {
     // Start emitting.
     EmitCondPrelude(block);
 
-    RegAlloc reg_alloc{code, A32JitState::SpillCount, SpillToOpArg<A32JitState>};
     A32EmitContext ctx{reg_alloc, block};
 
     for (auto iter = block.begin(); iter != block.end(); ++iter) {
