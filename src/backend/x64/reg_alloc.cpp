@@ -423,9 +423,15 @@ void RegAlloc::HostCall(IR::Inst* result_def, boost::optional<Argument&> arg0, b
 }
 
 void RegAlloc::EndOfAllocScope() {
-    for (auto& iter : hostloc_info) {
-        iter.ReleaseAll();
+	size_t i = 0;
+	for (; i < freeSpillPos; ++i) {
+		hostloc_info[i].ReleaseAll();
     }
+	for (--i; i >= static_cast<size_t>(HostLoc::FirstSpill); --i) {
+		if (!hostloc_info[i].IsEmpty())
+			break;
+	}
+	freeSpillPos = i + 1;
 }
 
 void RegAlloc::AssertNoMoreUses() {
@@ -453,7 +459,7 @@ HostLoc RegAlloc::SelectARegister(const HostLocList& desired_locations) const {
 }
 
 boost::optional<HostLoc> RegAlloc::ValueLocation(const IR::Inst* value) const {
-    for (size_t i = 0; i < hostloc_info.size(); i++)
+    for (size_t i = 0; i < freeSpillPos; i++)
         if (hostloc_info[i].ContainsValue(value))
             return static_cast<HostLoc>(i);
 
@@ -564,11 +570,17 @@ void RegAlloc::SpillRegister(HostLoc loc) {
 }
 
 HostLoc RegAlloc::FindFreeSpill() const {
-    for (size_t i = static_cast<size_t>(HostLoc::FirstSpill); i < hostloc_info.size(); i++) {
-        HostLoc loc = static_cast<HostLoc>(i);
-        if (LocInfo(loc).IsEmpty())
-            return loc;
+        if(freeSpillPos < hostloc_info.size()) {
+        HostLoc loc = static_cast<HostLoc>(freeSpillPos);
+		++freeSpillPos;
+        ASSERT_MSG(LocInfo(loc).IsEmpty(), "LocInfo(loc) must not be empty!");
+        return loc;
     }
+	for (size_t i = static_cast<size_t>(HostLoc::FirstSpill); i < hostloc_info.size(); ++i) {
+		HostLoc loc = static_cast<HostLoc>(i);
+		if (LocInfo(loc).IsEmpty()) {
+			return loc;
+		}
 
     ASSERT_MSG(false, "All spill locations are full");
 }

@@ -96,7 +96,8 @@ public:
     using ArgumentInfo = std::array<Argument, IR::max_arg_count>;
 
     explicit RegAlloc(BlockOfCode& code, size_t num_spills, std::function<Xbyak::Address(HostLoc)> spill_to_addr)
-        : hostloc_info(NonSpillHostLocCount + num_spills), code(code), spill_to_addr(std::move(spill_to_addr)) {}
+        : hostloc_info(NonSpillHostLocCount + num_spills), code(code), spill_to_addr(std::move(spill_to_addr))
+		, freeSpillPos(static_cast<size_t>(HostLoc::FirstSpill)) {}
 
     ArgumentInfo GetArgumentInfo(IR::Inst* inst);
 
@@ -151,6 +152,7 @@ private:
     const HostLocInfo& LocInfo(HostLoc loc) const;
 
     BlockOfCode& code;
+	mutable size_t freeSpillPos;
     std::function<Xbyak::Address(HostLoc)> spill_to_addr;
     void EmitMove(size_t bit_width, HostLoc to, HostLoc from);
     void EmitExchange(HostLoc a, HostLoc b);
